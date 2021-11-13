@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "dgSpecHash": "Bg7K3M6F60gR2uoAhPdEtQUhPDK0/oupePQ+zvR/2irnHGp7W42chr99LtU9ZDRpOEtIuziZ3ab+EoZiag1WGA==",
+  "success": true,
+  "projectFilePath": "/Users/n642279/work/vote/vote/vote.csproj",
+  "expectedPackageFiles": [
+    "/Users/n642279/.nuget/packages/microsoft.extensions.apidescription.server/3.0.0/microsoft.extensions.apidescription.server.3.0.0.nupkg.sha512",
+    "/Users/n642279/.nuget/packages/microsoft.openapi/1.2.3/microsoft.openapi.1.2.3.nupkg.sha512",
+    "/Users/n642279/.nuget/packages/swashbuckle.aspnetcore/6.2.3/swashbuckle.aspnetcore.6.2.3.nupkg.sha512",
+    "/Users/n642279/.nuget/packages/swashbuckle.aspnetcore.swagger/6.2.3/swashbuckle.aspnetcore.swagger.6.2.3.nupkg.sha512",
+    "/Users/n642279/.nuget/packages/swashbuckle.aspnetcore.swaggergen/6.2.3/swashbuckle.aspnetcore.swaggergen.6.2.3.nupkg.sha512",
+    "/Users/n642279/.nuget/packages/swashbuckle.aspnetcore.swaggerui/6.2.3/swashbuckle.aspnetcore.swaggerui.6.2.3.nupkg.sha512",
+    "/Users/n642279/.nuget/packages/microsoft.netcore.app.runtime.linux-x64/6.0.0/microsoft.netcore.app.runtime.linux-x64.6.0.0.nupkg.sha512",
+    "/Users/n642279/.nuget/packages/microsoft.aspnetcore.app.runtime.linux-x64/6.0.0/microsoft.aspnetcore.app.runtime.linux-x64.6.0.0.nupkg.sha512",
+    "/Users/n642279/.nuget/packages/microsoft.netcore.app.crossgen2.osx-x64/6.0.0/microsoft.netcore.app.crossgen2.osx-x64.6.0.0.nupkg.sha512",
+    "/Users/n642279/.nuget/packages/microsoft.netcore.app.host.linux-x64/6.0.0/microsoft.netcore.app.host.linux-x64.6.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
