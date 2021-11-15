@@ -1,10 +1,9 @@
-using System;
 using Microsoft.AspNetCore.Mvc;
 
 namespace vote.Participant
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("participants")]
     public class ParticipantsController : ControllerBase
     {
         private readonly ParticipantRepo _participantRepo;
@@ -19,13 +18,6 @@ namespace vote.Participant
         public IActionResult GetParticipants()
         {
             return Ok(_participantRepo.GetParticipants());
-        }
-        
-        [HttpGet]
-        [Route("Current")]
-        public IActionResult GetCurrentParticipants()
-        {
-            return Ok(_participantRepo.GetCurrent());
         }
     }
 }

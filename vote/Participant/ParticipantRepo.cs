@@ -1,59 +1,62 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
+using System.Linq;
+using Azure.Data.Tables;
 
 namespace vote.Participant
 {
-    public record ParticipantRepo
+    public class ParticipantRepo
     {
-        private readonly FileRepo<IList<Participant>> _participantFileRepo;
-        private readonly FileRepo<IList<Participant>> _currentFileRepo;
-
+        private readonly TableClient _participantsTableClient;
+       
         public ParticipantRepo()
         {
-            _participantFileRepo = new FileRepo<IList<Participant>>(Path.Join(CommonPaths.BasePath,"participants.json"), ImmutableList<Participant>.Empty);
-            _currentFileRepo = new FileRepo<IList<Participant>>( Path.Join(CommonPaths.BasePath, "current.json"), ImmutableList<Participant>.Empty);
-        }
-        
-        public ImmutableList<Participant> GetParticipants()
-        {
-            return _participantFileRepo.Read().ToImmutableList();
+            TableServiceClient serviceClient = new(CommonPaths.DevConnectionString);
+
+            serviceClient.CreateTableIfNotExists("participants");
+            serviceClient.CreateTableIfNotExists("current");
+
+            _participantsTableClient = serviceClient.GetTableClient("participants");
         }
 
-        public void AddParticipant(Participant participant)
+        private ImmutableList<ParticipantEntity> ReadParticipants()
         {
-            if (GetParticipants().Contains(participant))
-            {
-                throw new Exception("Participant already exist");
-            }
-            _participantFileRepo.Write(GetParticipants().Add(participant));
+            var pages = _participantsTableClient.Query<ParticipantEntity>().AsPages().ToImmutableList();
+            if (pages.Count > 1)
+                throw new Exception("Assuming we have only one page");
+            return pages.First().Values.ToImmutableList();
         }
-        
-        public void RemoveParticipant(Participant participant)
+
+        public ImmutableList<ParticipantDto> GetParticipants()
         {
-            var participants = GetParticipants();
-            if (!participants.Contains(participant))
-            {
-                throw new ArgumentOutOfRangeException($"Cannot delete {participant}. It is not in the list");
-            }
-            _participantFileRepo.Write(participants.Remove(participant));
+            return ReadParticipants()
+                .Select(participantEntity => new ParticipantDto()
+                {
+                    Name = participantEntity.Name,
+                }).ToImmutableList();
         }
-        
-        public IList<Participant> GetCurrent()
+
+        public void AddParticipant(ParticipantDto participantDto)
         {
-            return _currentFileRepo.Read();
-        }
-        
-        public void SetCurrent(IList<Participant> participant)
-        {
-            var participants = GetParticipants();
-            var foundParticipants = participants.FindAll(participant.Contains);
-            if (foundParticipants.Count != participant.Count)
+            if (ReadParticipants().Any(participantEntity => participantEntity.Name == participantDto.Name))
             {
-                throw new Exception($"Not all participants {participant} found, in {foundParticipants}");
+                throw new NotSupportedException("Cannot add same participant serveral times");
             }
-            _currentFileRepo.Write(foundParticipants);
+
+            var entity = ParticipantEntity.Create(participantDto.Name);
+            _participantsTableClient.UpsertEntityAsync(entity);
+        }
+
+        public void RemoveParticipant(ParticipantDto participantDto)
+        {
+            var participantToDelete = ReadParticipants().FirstOrDefault(p => p.Name == participantDto.Name);
+            if (participantToDelete == null)
+            {
+                throw new NotSupportedException("Not able to delete participant - It does not exist");
+            }
+
+            _participantsTableClient.DeleteEntityAsync(participantToDelete.PartitionKey, participantToDelete.RowKey,
+                participantToDelete.ETag);
         }
     }
 }

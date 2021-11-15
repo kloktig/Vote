@@ -1,46 +1,42 @@
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 
 namespace vote.Participant
 {
     [ApiController]
-    [Route("[controller]")]
-    public class AdminController : ControllerBase
+    [Route("admin/participants")]
+    public class ParticipantsAdminController : ControllerBase
     {
         private readonly ParticipantRepo _participantRepo;
 
-        public AdminController(ParticipantRepo participantRepo)
+        public ParticipantsAdminController(ParticipantRepo participantRepo)
         {
             _participantRepo = participantRepo;
         }
         
         [HttpPost]
-        [Route("Participant")]
-        public IActionResult Post(Participant participant)
+        public IActionResult Post(ParticipantDto participantDto)
         {
             try
             {
-                _participantRepo.AddParticipant(participant);
+                _participantRepo.AddParticipant(participantDto);
                 return Ok(_participantRepo.GetParticipants());
             }
-            catch (Exception e)
+            catch (NotSupportedException e)
             {
                 return BadRequest(e);
             }
         }
         
-        
-        [HttpPost]
-        [Route("Current")]
-        public IActionResult SetCurrentParticipants(List<Participant> current)
+        [HttpDelete]
+        public IActionResult Delete(ParticipantDto participantDto)
         {
             try
             {
-                _participantRepo.SetCurrent(current);
-                return Ok(current);
+                _participantRepo.RemoveParticipant(participantDto);
+                return Ok(_participantRepo.GetParticipants());
             }
-            catch (Exception e)
+            catch (NotSupportedException e)
             {
                 return BadRequest(e);
             }

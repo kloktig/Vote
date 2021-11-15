@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using vote.Participant;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +11,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<ParticipantRepo>();
+builder.Services.AddSingleton<CurrentRepo>();
 
 var app = builder.Build();
 
