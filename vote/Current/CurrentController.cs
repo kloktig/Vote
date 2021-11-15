@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace vote.Participant
+namespace vote.Current
 {
     [ApiController]
     [Route("current")]

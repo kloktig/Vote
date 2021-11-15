@@ -5,8 +5,9 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
+using vote.Participant;
 
-namespace vote.Participant
+namespace vote.Current
 {
     public class CurrentRepo
     {

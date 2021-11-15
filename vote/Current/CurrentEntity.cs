@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Azure;
 using Azure.Data.Tables;
+using vote.Participant;
 
-namespace vote.Participant
+namespace vote.Current
 {
     public record CurrentEntity : ITableEntity
     {

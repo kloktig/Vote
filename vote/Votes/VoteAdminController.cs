@@ -2,6 +2,7 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using vote.Current;
 using vote.Participant;
 
 namespace vote.Votes

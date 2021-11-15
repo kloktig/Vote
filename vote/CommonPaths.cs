@@ -1,7 +1,4 @@
-using System;
-using System.IO;
-
-namespace vote.Participant
+namespace vote
 {
     public static class CommonPaths
     {
