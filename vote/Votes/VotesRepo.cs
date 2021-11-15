@@ -24,13 +24,13 @@ namespace vote.Votes
             await _table.AddEntityAsync(VoteEntity.From(vote));
         }
 
-        public IList<VoteEntity> Read(string name)
+        public IList<VoteEntity> Read(string name, DateTimeOffset startTime)
         {
             var partitionKey = name;
             var pages = _table.Query<VoteEntity>($"PartitionKey eq '{partitionKey}'").AsPages().ToImmutableList();
             if (pages.Count > 1)
                 throw new Exception("Assuming we have only one page");
-            return pages.First().Values.ToImmutableList();
+            return pages.First().Values.OrderBy(entity => entity.Timestamp).SkipWhile(v => v.Timestamp < startTime).ToImmutableList();
         }
     }
 }

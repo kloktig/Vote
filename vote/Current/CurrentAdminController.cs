@@ -27,8 +27,14 @@ namespace vote.Current
             {
                 return BadRequest("Can only set participants as current");
             }
-            await _currentRepo.WriteCurrent(current);
-            return Ok(current);
+            return Ok(await _currentRepo.WriteCurrent(current));
+        }
+        
+        [HttpGet]
+        [Route("all")]
+        public IActionResult ListAll()
+        {
+            return Ok(_currentRepo.ListCurrents());
         }
     }
 }

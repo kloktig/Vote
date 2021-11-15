@@ -23,14 +23,14 @@ namespace vote.Votes
         }
 
         [HttpGet]
-        [Route("voteCounts")]
-        public IActionResult GetVoteCounts([FromQuery] DateTime? from, [FromQuery] DateTime? to,
-            [FromQuery] bool? current)
+        [Route("voteCounts/{id}")]
+        public IActionResult GetVoteCounts(string id)
         {
-            var participants = current == true ? _currentRepo.GetCurrent() : _participantRepo.GetParticipants();
-            var votes = participants.SelectMany(part => GetVotesInRange(part.Name, from, to)).ToImmutableList();
+            var (currentDto, end) = _currentRepo.FindEntry(id);
+            
+            var votes = currentDto.Participants.SelectMany(part => GetVotesInRange(part.Name, currentDto.StartTime, end)).ToImmutableList();
             var totalCount = votes.Count;
-            var counts = participants.Select(p =>
+            var counts = currentDto.Participants.Select(p =>
             {
                 var count = votes.Count(v => v.Name == p.Name);
                 var pct = totalCount == 0
@@ -46,15 +46,13 @@ namespace vote.Votes
             return Ok(counts);
         }
 
-        private IImmutableList<VoteEntity> GetVotesInRange(string name, DateTime? from, DateTime? to)
+        private IImmutableList<VoteEntity> GetVotesInRange(string name, DateTimeOffset from, DateTimeOffset? to)
         {
-            var allVotes = _votesStorage.Read(name);
-            var votes = (from.HasValue, to.HasValue) switch
+            var allVotes = _votesStorage.Read(name, from);
+            var votes = to.HasValue switch
             {
-                (true, true) => allVotes.SkipWhile(v => v.Timestamp < from).TakeWhile(v => v.Timestamp <= to),
-                (false, true) => allVotes.TakeWhile(v => v.Timestamp <= to),
-                (true, false) => allVotes.SkipWhile(v => v.Timestamp < from),
-                (false, false) => allVotes
+                 true => allVotes.TakeWhile(v => v.Timestamp <= to),
+                 false => allVotes
             };
             return votes.ToImmutableList();
         }
