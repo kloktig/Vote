@@ -9,17 +9,20 @@ namespace vote.Current
 {
     public record CurrentEntity : ITableEntity
     {
-        public static CurrentEntity Create(IList<ParticipantDto> participants)
+        public static CurrentEntity Create(IList<ParticipantDto> participants, DateTimeOffset? endTime = null)
         {
             return new CurrentEntity
             {
                 PartitionKey = "Current",
                 RowKey = Guid.NewGuid().ToString(),
                 Participants = JsonSerializer.Serialize(participants),
+                EndTime = endTime
             };
         }
 
         public string Participants { get; set; }
+        public DateTimeOffset? EndTime { get; set; }
+
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }

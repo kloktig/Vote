@@ -9,5 +9,7 @@ namespace vote.Current
         public string Id { get; init; }
         public IList<ParticipantDto> Participants { get; init; }
         public DateTimeOffset StartTime { get; init; }
+        public DateTimeOffset? EndTime { get; init; }
+
     }
 }

@@ -11,13 +11,11 @@ namespace vote.Votes
     [Route("admin/votes")]
     public class VoteAdminController : ControllerBase
     {
-        private readonly ParticipantRepo _participantRepo;
         private readonly CurrentRepo _currentRepo;
         private readonly VotesRepo _votesStorage;
 
         public VoteAdminController(ParticipantRepo participantRepo, CurrentRepo currentRepo)
         {
-            _participantRepo = participantRepo;
             _currentRepo = currentRepo;
             _votesStorage = new VotesRepo();
         }
@@ -26,9 +24,9 @@ namespace vote.Votes
         [Route("voteCounts/{id}")]
         public IActionResult GetVoteCounts(string id)
         {
-            var (currentDto, end) = _currentRepo.FindEntry(id);
+            var currentDto = _currentRepo.FindEntry(id);
             
-            var votes = currentDto.Participants.SelectMany(part => GetVotesInRange(part.Name, currentDto.StartTime, end)).ToImmutableList();
+            var votes = currentDto.Participants.SelectMany(part => GetVotesInRange(part.Name, currentDto.StartTime, currentDto.EndTime)).ToImmutableList();
             var totalCount = votes.Count;
             var counts = currentDto.Participants.Select(p =>
             {

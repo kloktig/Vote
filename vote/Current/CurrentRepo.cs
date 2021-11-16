@@ -24,7 +24,12 @@ namespace vote.Current
             
             CurrentEntity currentEntity = CurrentEntity.Create(currentParticipants);
             await _currentTableClient.AddEntityAsync(currentEntity);
-            return new CurrentDto {Participants = currentParticipants, Id = currentEntity.RowKey};
+            return new CurrentDto
+            {
+                Participants = currentParticipants, 
+                Id = currentEntity.RowKey,
+                EndTime = currentEntity.EndTime
+            };
         }
         
         public CurrentDto GetCurrent()
@@ -39,7 +44,8 @@ namespace vote.Current
             {
                 Participants = participants,
                 Id = currentEntity.RowKey,
-                StartTime = currentEntity.Timestamp.Value
+                StartTime = currentEntity.Timestamp.Value,
+                EndTime = currentEntity.EndTime
             };
         }
         
@@ -51,8 +57,9 @@ namespace vote.Current
             return pages.First().Values.OrderByDescending(p => p.Timestamp).ToImmutableList();
         }
         
-        public (CurrentDto dto, DateTimeOffset? endTime) FindEntry(string id)
+        public CurrentDto FindEntry(string id)
         {
+            // TODO: Filter
             var pages = _currentTableClient.Query<CurrentEntity>().AsPages().ToImmutableList();
             if (pages.Count > 1)
                 throw new Exception("Assuming we have only one page");
@@ -81,8 +88,7 @@ namespace vote.Current
                 Id = currentEntity.RowKey,
                 StartTime = currentEntity.Timestamp.Value
             };
-            var endTime = index > 0 ? currentEntities[index - 1].Timestamp : null;
-            return (currentDto, endTime);
+            return currentDto;
         }
 
     }
