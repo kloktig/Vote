@@ -14,7 +14,6 @@ namespace vote.Participant
         }
 
         [HttpGet]
-        [Route("All")]
         public IActionResult GetParticipants()
         {
             return Ok(_participantRepo.GetParticipants());

@@ -14,23 +14,26 @@ namespace vote.Votes
 
         public VotesRepo()
         {
-            TableServiceClient serviceClient = new(CommonPaths.DevConnectionString);
+            TableServiceClient serviceClient = new(Common.DevConnectionString);
             serviceClient.CreateTableIfNotExists("votes");
             _table = serviceClient.GetTableClient("votes");
         }
 
-        public async Task Write(ParticipantDto vote)
+        public async Task Write(string uid, ParticipantDto vote)
         {
-            await _table.AddEntityAsync(VoteEntity.From(vote));
+            await _table.AddEntityAsync(VoteEntity.From(uid, vote));
         }
 
-        public IList<VoteEntity> Read(string name, DateTimeOffset startTime)
+        public IList<VoteEntity> Read(string name, DateTimeOffset startTime, DateTimeOffset endtime)
         {
-            var partitionKey = name;
-            var pages = _table.Query<VoteEntity>($"PartitionKey eq '{partitionKey}'").AsPages().ToImmutableList();
+            var filter = $"Name eq '{name}'";
+            var pages = _table.Query<VoteEntity>(filter).AsPages().ToImmutableList();
             if (pages.Count > 1)
                 throw new Exception("Assuming we have only one page");
-            return pages.First().Values.OrderBy(entity => entity.Timestamp).SkipWhile(v => v.Timestamp < startTime).ToImmutableList();
+            return pages.First().Values.OrderBy(entity => entity.Timestamp)
+                .SkipWhile(e => e.Timestamp < startTime)
+                .TakeWhile(e => e.Timestamp <= endtime)
+                .ToImmutableList();
         }
     }
 }

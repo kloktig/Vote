@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using vote.Participant;
 
@@ -16,9 +20,11 @@ namespace vote.Votes
         }
 
         [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> AddVote(ParticipantDto participantDto)
         {
-            await _votesRepo.Write(participantDto);
+            var uid = HttpContext.User.Claims.ToImmutableList()[0].Value;
+            await _votesRepo.Write(uid, participantDto);
             return Accepted();
         }
     }

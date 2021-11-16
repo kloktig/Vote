@@ -11,10 +11,9 @@ namespace vote.Participant
        
         public ParticipantRepo()
         {
-            TableServiceClient serviceClient = new(CommonPaths.DevConnectionString);
+            TableServiceClient serviceClient = new(Common.DevConnectionString);
 
             serviceClient.CreateTableIfNotExists("participants");
-            serviceClient.CreateTableIfNotExists("current");
 
             _participantsTableClient = serviceClient.GetTableClient("participants");
         }
@@ -30,10 +29,7 @@ namespace vote.Participant
         public ImmutableList<ParticipantDto> GetParticipants()
         {
             return ReadParticipants()
-                .Select(participantEntity => new ParticipantDto()
-                {
-                    Name = participantEntity.Name,
-                }).ToImmutableList();
+                .Select(participantEntity => new ParticipantDto(participantEntity.Name)).ToImmutableList();
         }
 
         public void AddParticipant(ParticipantDto participantDto)

@@ -1,9 +1,16 @@
+using System.Collections.Generic;
+using Azure.Core.Pipeline;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using vote.Current;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using vote;
 using vote.Participant;
+using vote.Poll;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 
@@ -12,7 +19,42 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<ParticipantRepo>();
-builder.Services.AddSingleton<CurrentRepo>();
+builder.Services.AddSingleton<PollRepo>();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    var scheme = new OpenApiSecurityScheme
+    {
+        Description = "Standard Authorization header using the Bearer scheme. Example: \"{token}\"",
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = JwtBearerDefaults.AuthenticationScheme,
+        BearerFormat = "JWT",
+    };
+    c.AddSecurityDefinition("Bearer", scheme);
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+                {Reference = new OpenApiReference {Type = ReferenceType.SecurityScheme, Id = "Bearer"}},
+            new string[] { }
+        }
+    });
+});
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidateAudience = false,
+        ValidateActor = false,
+        ValidateIssuer = false,
+        IssuerSigningKey = Common.NonSecureSymmetricSecurityKey
+    };
+});
+
 
 var app = builder.Build();
 

@@ -4,23 +4,25 @@ using System.Text.Json;
 using Azure;
 using Azure.Data.Tables;
 using vote.Participant;
+#pragma warning disable 8618
 
-namespace vote.Current
+namespace vote.Poll
 {
-    public record CurrentEntity : ITableEntity
+    public record PollEntity : ITableEntity
     {
-        public static CurrentEntity Create(IList<ParticipantDto> participants, DateTimeOffset? endTime = null)
+        public static PollEntity Create(IList<ParticipantDto> participants, DateTimeOffset? endTime = null)
         {
-            return new CurrentEntity
+            return new PollEntity
             {
-                PartitionKey = "Current",
+                PartitionKey = "TBD",
                 RowKey = Guid.NewGuid().ToString(),
                 Participants = JsonSerializer.Serialize(participants),
+                StartTime = DateTimeOffset.UtcNow,
                 EndTime = endTime
             };
         }
-
-        public string Participants { get; set; }
+        public string Participants { get; private set; }
+        public DateTimeOffset StartTime { get; set; }
         public DateTimeOffset? EndTime { get; set; }
 
         public string PartitionKey { get; set; }

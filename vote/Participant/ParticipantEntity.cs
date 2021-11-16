@@ -1,6 +1,7 @@
 using System;
 using Azure;
 using Azure.Data.Tables;
+#pragma warning disable 8618
 
 namespace vote.Participant
 {

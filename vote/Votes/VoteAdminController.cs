@@ -2,8 +2,7 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using vote.Current;
-using vote.Participant;
+using vote.Poll;
 
 namespace vote.Votes
 {
@@ -11,12 +10,12 @@ namespace vote.Votes
     [Route("admin/votes")]
     public class VoteAdminController : ControllerBase
     {
-        private readonly CurrentRepo _currentRepo;
+        private readonly PollRepo _pollRepo;
         private readonly VotesRepo _votesStorage;
 
-        public VoteAdminController(ParticipantRepo participantRepo, CurrentRepo currentRepo)
+        public VoteAdminController(PollRepo pollRepo)
         {
-            _currentRepo = currentRepo;
+            _pollRepo = pollRepo;
             _votesStorage = new VotesRepo();
         }
 
@@ -24,29 +23,24 @@ namespace vote.Votes
         [Route("voteCounts/{id}")]
         public IActionResult GetVoteCounts(string id)
         {
-            var currentDto = CurrentDto.From(_currentRepo.FindEntity(id));
+            var pollDto = PollDto.From(_pollRepo.FindEntity(id));
             
-            var votes = currentDto.Participants.SelectMany(part => GetVotesInRange(part.Name, currentDto.StartTime.Value, currentDto.EndTime)).ToImmutableList();
+            var votes = pollDto.Participants.SelectMany(part => GetVotesInRange(part.Name, pollDto.StartTime!.Value, pollDto.EndTime)).ToImmutableList();
             var totalCount = votes.Count;
-            var counts = currentDto.Participants.Select(p =>
+            var counts = pollDto.Participants.Select(p =>
             {
                 var count = votes.Count(v => v.Name == p.Name);
                 var pct = totalCount == 0
                     ? decimal.Zero
                     : 100 * Convert.ToDecimal(count) / Convert.ToDecimal(totalCount);
-                return new VoteCount
-                {
-                    Name = p.Name,
-                    Count = count,
-                    Percentage = pct
-                };
+                return new VoteCount(p.Name, count, pct);
             });
             return Ok(counts);
         }
 
         private IImmutableList<VoteEntity> GetVotesInRange(string name, DateTimeOffset from, DateTimeOffset? to)
         {
-            var allVotes = _votesStorage.Read(name, from);
+            var allVotes = _votesStorage.Read(name, from, to ?? DateTimeOffset.MaxValue);
             var votes = to.HasValue switch
             {
                  true => allVotes.TakeWhile(v => v.Timestamp <= to),

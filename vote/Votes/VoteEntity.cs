@@ -2,16 +2,17 @@ using System;
 using Azure;
 using Azure.Data.Tables;
 using vote.Participant;
+#pragma warning disable 8618
 
 namespace vote.Votes
 {
     public record VoteEntity : ITableEntity
     {
-        public static VoteEntity From(ParticipantDto participant)
+        public static VoteEntity From(string uid, ParticipantDto participant)
         {
             return new VoteEntity
             {
-                PartitionKey = participant.Name,
+                PartitionKey = uid,
                 RowKey = Guid.NewGuid().ToString(),
                 Name = participant.Name
             };
