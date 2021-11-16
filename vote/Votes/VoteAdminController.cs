@@ -24,9 +24,9 @@ namespace vote.Votes
         [Route("voteCounts/{id}")]
         public IActionResult GetVoteCounts(string id)
         {
-            var currentDto = _currentRepo.FindEntry(id);
+            var currentDto = CurrentDto.From(_currentRepo.FindEntity(id));
             
-            var votes = currentDto.Participants.SelectMany(part => GetVotesInRange(part.Name, currentDto.StartTime, currentDto.EndTime)).ToImmutableList();
+            var votes = currentDto.Participants.SelectMany(part => GetVotesInRange(part.Name, currentDto.StartTime.Value, currentDto.EndTime)).ToImmutableList();
             var totalCount = votes.Count;
             var counts = currentDto.Participants.Select(p =>
             {

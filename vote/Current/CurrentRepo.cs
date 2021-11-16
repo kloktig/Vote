@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Data.Tables;
 using vote.Participant;
 
@@ -19,17 +20,19 @@ namespace vote.Current
             _currentTableClient = serviceClient.GetTableClient("current");
         }
 
-        public async Task<CurrentDto> WriteCurrent(IList<ParticipantDto> currentParticipants)
+        public async Task<CurrentDto> AddEndTime(string id, DateTimeOffset endTime)
         {
-            
-            CurrentEntity currentEntity = CurrentEntity.Create(currentParticipants);
+            var entityToUpdate = FindEntity(id);
+            var entityWithUpdate = entityToUpdate with{ EndTime = endTime};
+            await _currentTableClient.UpdateEntityAsync(entityWithUpdate, ETag.All);
+            return CurrentDto.From(entityWithUpdate);
+        }
+        
+        public async Task<CurrentDto> WriteCurrent(IList<ParticipantDto> currentParticipants, DateTimeOffset? endTime)
+        {
+            CurrentEntity currentEntity = CurrentEntity.Create(currentParticipants, endTime);
             await _currentTableClient.AddEntityAsync(currentEntity);
-            return new CurrentDto
-            {
-                Participants = currentParticipants, 
-                Id = currentEntity.RowKey,
-                EndTime = currentEntity.EndTime
-            };
+            return CurrentDto.From(currentEntity);
         }
         
         public CurrentDto GetCurrent()
@@ -39,14 +42,7 @@ namespace vote.Current
             {
                 throw new NotSupportedException("Should not be null");
             }
-            var participants = JsonSerializer.Deserialize<IList<ParticipantDto>>(currentEntity.Participants) ?? ImmutableList<ParticipantDto>.Empty;
-            return new CurrentDto
-            {
-                Participants = participants,
-                Id = currentEntity.RowKey,
-                StartTime = currentEntity.Timestamp.Value,
-                EndTime = currentEntity.EndTime
-            };
+            return CurrentDto.From(currentEntity);
         }
         
         public ImmutableList<CurrentEntity> ListCurrents()
@@ -57,39 +53,19 @@ namespace vote.Current
             return pages.First().Values.OrderByDescending(p => p.Timestamp).ToImmutableList();
         }
         
-        public CurrentDto FindEntry(string id)
+        public CurrentEntity FindEntity(string id)
         {
             // TODO: Filter
-            var pages = _currentTableClient.Query<CurrentEntity>().AsPages().ToImmutableList();
-            if (pages.Count > 1)
-                throw new Exception("Assuming we have only one page");
-
-            var currentEntities = pages
-                .First().Values
-                .OrderByDescending(p => p.Timestamp)
-                .ToImmutableList();
+            var currentEntities = ListCurrents();
             
             var index = currentEntities.FindIndex(p => p.RowKey == id);
-            
             if (index < 0)
             {
                 throw new NotSupportedException("Could not find entity");
             }
-
-            var currentEntity = currentEntities[index];
-            if (currentEntity.Timestamp == null)
-            {
-                throw new NotSupportedException("Timestamp must be set");
-            }
-            var participants = JsonSerializer.Deserialize<IList<ParticipantDto>>(currentEntity.Participants) ?? ImmutableList<ParticipantDto>.Empty;
-            var currentDto = new CurrentDto
-            {
-                Participants = participants,
-                Id = currentEntity.RowKey,
-                StartTime = currentEntity.Timestamp.Value
-            };
-            return currentDto;
+            
+            return currentEntities[index];
         }
-
+        
     }
 }
