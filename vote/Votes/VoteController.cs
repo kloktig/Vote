@@ -9,7 +9,7 @@ using vote.Participant;
 namespace vote.Votes
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("vote")]
     public class VoteController : ControllerBase
     {
         private readonly VotesRepo _votesRepo;
