@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using Azure.Core.Pipeline;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using vote;
 using vote.Participant;
 using vote.Poll;
+using vote.Votes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +19,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<ParticipantRepo>();
 builder.Services.AddSingleton<PollRepo>();
+builder.Services.AddSingleton<VotesRepo>();
 
 builder.Services.AddSwaggerGen(c =>
 {

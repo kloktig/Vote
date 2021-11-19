@@ -20,6 +20,11 @@ namespace vote.Poll
             _tableClient = serviceClient.GetTableClient("poll");
         }
 
+        public bool IsPollOpen(string id)
+        {
+            return FindEntity(id).EndTime == null;
+        }
+
         public async Task<PollDto> AddEndTime(string id, DateTimeOffset endTime)
         {
             var entityToUpdate = FindEntity(id);
@@ -46,7 +51,7 @@ namespace vote.Poll
             var pages = _tableClient.Query<PollEntity>(filter).AsPages().ToImmutableList();
             if (pages.Count > 1)
                 throw new Exception("Assuming we have only one page");
-            return pages.First().Values.OrderByDescending(p => p.Timestamp).ToImmutableList();
+            return pages.First().Values.ToImmutableList();
         }
         
         public PollEntity FindEntity(string id)

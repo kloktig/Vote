@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
-using vote.Participant;
 
 namespace vote.Votes
 {
@@ -19,21 +17,18 @@ namespace vote.Votes
             _table = serviceClient.GetTableClient("votes");
         }
 
-        public async Task Write(string uid, ParticipantDto vote)
+        public async Task Write(string uid, string pollId, VotesDto votes)
         {
-            await _table.AddEntityAsync(VoteEntity.From(uid, vote));
+            await _table.UpsertEntityAsync(VoteEntity.From(uid, pollId, votes));
         }
 
-        public IList<VoteEntity> Read(string name, DateTimeOffset startTime, DateTimeOffset endtime)
+        public ImmutableList<VoteEntity> Read(string id)
         {
-            var filter = $"Name eq '{name}'";
+            var filter = $"RowKey eq '{id}'";
             var pages = _table.Query<VoteEntity>(filter).AsPages().ToImmutableList();
             if (pages.Count > 1)
                 throw new Exception("Assuming we have only one page");
-            return pages.First().Values.OrderBy(entity => entity.Timestamp)
-                .SkipWhile(e => e.Timestamp < startTime)
-                .TakeWhile(e => e.Timestamp <= endtime)
-                .ToImmutableList();
+            return pages.First().Values.ToImmutableList();
         }
     }
 }

@@ -34,11 +34,6 @@ namespace vote.Participant
 
         public void AddParticipant(ParticipantDto participantDto)
         {
-            if (ReadParticipants().Any(participantEntity => participantEntity.Name == participantDto.Name))
-            {
-                throw new NotSupportedException("Cannot add same participant serveral times");
-            }
-
             var entity = ParticipantEntity.Create(participantDto.Name);
             _participantsTableClient.UpsertEntityAsync(entity);
         }
